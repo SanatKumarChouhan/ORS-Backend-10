@@ -59,6 +59,10 @@ public class UserDAOImpl extends BaseDAOImpl<UserDTO> implements UserDAOInt {
 
 			whereCondition.add(builder.equal(qRoot.get("loginId"), dto.getLoginId()));
 		}
+		if (!isEmptyString(dto.getGender())) {
+
+			whereCondition.add(builder.equal(qRoot.get("gender"), dto.getGender()));
+		}
 		if (!isEmptyString(dto.getPassword())) {
 
 			whereCondition.add(builder.equal(qRoot.get("password"), dto.getPassword()));
@@ -102,8 +106,11 @@ public class UserDAOImpl extends BaseDAOImpl<UserDTO> implements UserDAOInt {
 		super.delete(dto, userContext);
 		Long id = dto.getImageId();
 		System.out.println(id);
-		AttachmentDTO attachmentDto = attachmentService.findByPK(id, userContext);
-		attachmentService.delete(attachmentDto, userContext);
+		if (id != null) {
+
+			AttachmentDTO attachmentDto = attachmentService.findByPK(id, userContext);
+			attachmentService.delete(attachmentDto, userContext);
+		}
 	}
 
 	@Override

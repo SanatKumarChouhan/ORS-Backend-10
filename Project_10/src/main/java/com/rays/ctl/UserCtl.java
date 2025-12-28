@@ -37,8 +37,9 @@ import com.rays.form.MyProfileForm;
 import com.rays.form.UserForm;
 import com.rays.service.RoleServiceInt;
 import com.rays.service.UserServiceInt;
+
 /**
- * SANAT KUMAR CHOUHAN 
+ * SANAT KUMAR CHOUHAN
  *
  */
 @RestController
@@ -57,7 +58,7 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 	/**
 	 * Send email
 	 */
-	@Autowired				
+	@Autowired
 	public EmailServiceImpl emailSender;
 
 	@GetMapping("/preload")
@@ -76,14 +77,13 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 		ORSResponse res = new ORSResponse(true);
 		HttpSession session = req.getSession();
 		session.invalidate();
-		//res.setSuccess(true);
+		// res.setSuccess(true);
 		res.addMessage("Logout Successfully");
-		//res.addResult("roleList", list);
+		// res.addResult("roleList", list);
 		System.out.println("SANAT KUMAR CHOUHAN logout");
 		return res;
 	}
 
-	
 	/*
 	 * @GetMapping("logout") public ORSResponse logout(HttpServletRequest request,
 	 * HttpServletResponse response) { System.out.println("logout runnnnn");
@@ -138,14 +138,11 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 	public ORSResponse changePassword(@RequestBody @Valid ChangePasswordForm form, BindingResult bindingResult) {
 		System.out.println("Inside changepassword in userctl......vipin");
 
-		
 		ORSResponse res = validate(bindingResult);
 
 		if (!res.isSuccess()) {
 			return res;
 		}
-
-		
 
 		UserDTO changedDto = baseService.changePassword(form.getLoginId(), form.getOldPassword(), form.getNewPassword(),
 				userContext);
@@ -218,9 +215,9 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 	 * @param req
 	 * @return
 	 */
-	
-	//user page se jab image upload krte hai tab ye method chalti hai
-	
+
+	// user page se jab image upload krte hai tab ye method chalti hai
+
 	@PostMapping("/profilePic/{userId}")
 	public ORSResponse uploadPic(@PathVariable Long userId, @RequestParam("file") MultipartFile file,
 			HttpServletRequest req) {
@@ -234,21 +231,20 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 		doc.setDescription("Profile picture");
 
 		doc.setPath(req.getServletPath());
-		
+
 		doc.setUserId(userId);
 
 		if (userDTO.getImageId() != null && userDTO.getImageId() > 0) {
 			doc.setId(userDTO.getImageId());
 		}
 		System.out.println("before calling save");
-		
-		
+
 		Long imageId = attachmentService.save(doc, userContext);
-		
+
 		System.out.println("after save");
-		
+
 		// Update new image id
-		
+
 		if (userDTO.getImageId() == null || userDTO.getImageId() == 0) {
 			userDTO.setImageId(imageId);
 			baseService.update(userDTO, userContext);
@@ -288,7 +284,7 @@ public class UserCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 				OutputStream out = response.getOutputStream();
 				out.write(attachmentDTO.getDoc());
 				out.close();
-				
+
 				System.out.println("Profile pic......rahul");
 			} else {
 				response.getWriter().write("ERROR: File not found");
