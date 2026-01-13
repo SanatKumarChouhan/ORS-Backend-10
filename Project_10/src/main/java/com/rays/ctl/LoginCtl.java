@@ -1,14 +1,15 @@
 package com.rays.ctl;
 
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,10 +28,11 @@ import com.rays.common.attachment.AttachmentDTO;
 import com.rays.common.attachment.AttachmentServiceInt;
 import com.rays.config.JWTUtil;
 import com.rays.dto.UserDTO;
+import com.rays.exception.ApplicationException;
+import com.rays.exception.DatabaseException;
 import com.rays.form.LoginForm;
 import com.rays.form.UserForm;
 import com.rays.form.UserRegistrationForm;
-import com.rays.service.JWTUserDetailsService;
 import com.rays.service.UserServiceInt;
 
 /**
@@ -55,7 +57,6 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 	@Autowired
 	private JWTUtil jwtUtil;
 
-
 	@Autowired
 	AttachmentServiceInt attachmentService;
 
@@ -79,7 +80,7 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 
 	@PostMapping("login")
 	public ORSResponse login(@RequestBody @Valid LoginForm form, BindingResult bindingResult, HttpSession session,
-			HttpServletRequest request) throws Exception {
+			HttpServletRequest request) {
 		System.out.println("loginCtl ki login API ko hit kiya");
 		ORSResponse res = validate(bindingResult);
 
@@ -87,37 +88,50 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 			return res;
 		}
 
-		UserDTO dto = baseService.authenticate(form.getLoginId(), form.getPassword());
-		if (dto == null) {
-			System.out.println("dto == null ");
-			res.setSuccess(false);
-			res.addMessage("Invalid ID or Password");
-		} else {
-			UserContext context = new UserContext(dto);
+		try {
 
-//			 session.setAttribute("userContext", context); 				
+			UserDTO dto = baseService.authenticate(form.getLoginId(), form.getPassword());
+			if (dto == null) {
+				System.out.println("dto == null ");
+				res.setSuccess(false);
+				res.addMessage("Invalid ID or Password");
+			} else {
+				UserContext context = new UserContext(dto);
 
-			session.setAttribute("test", dto.getFirstName());
+//				 session.setAttribute("userContext", context); 				
 
-			res.setSuccess(true);
-			res.addData(dto);
-			res.addResult("jsessionid", session.getId());
-			res.addResult("loginId", dto.getLoginId());
-			res.addResult("role", dto.getRoleName());
-			res.addResult("fname", dto.getFirstName());
-			res.addResult("lname", dto.getLastName());
+				session.setAttribute("test", dto.getFirstName());
 
-			/* System.out.println("jsessionid " + session.getId()); */
-			System.out.println("Before calling userDetail authenticate");
+				res.setSuccess(true);
+				res.addData(dto);
+				res.addResult("jsessionid", session.getId());
+				res.addResult("loginId", dto.getLoginId());
+				res.addResult("role", dto.getRoleName());
+				res.addResult("fname", dto.getFirstName());
+				res.addResult("lname", dto.getLastName());
 
-			final String token = jwtUtil.generateToken(dto.getLoginId());
+				/* System.out.println("jsessionid " + session.getId()); */
+				System.out.println("Before calling userDetail authenticate");
 
-			res.addResult("token", token);
+				final String token = jwtUtil.generateToken(dto.getLoginId());
+
+				res.addResult("token", token);
+				return res;
+
+			}
+
 			return res;
 
+		} catch (Exception e) {
+//			throw new DatabaseException("Database not connected. .");
+			
+			res.setSuccess(false);
+			res.addMessage("Database Not Connected....");
+			return res;
+			
+			
 		}
 
-		return res;
 	}
 
 	/**
@@ -136,7 +150,7 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 		}
 		ORSResponse res = new ORSResponse(true);
 		UserDTO dto = this.baseService.forgotPassword(login);
-		if (dto == null){
+		if (dto == null) {
 			res.setSuccess(false);
 			res.addMessage("Invalid Login Id");
 		} else {
