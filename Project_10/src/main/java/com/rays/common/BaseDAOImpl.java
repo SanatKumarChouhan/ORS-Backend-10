@@ -17,6 +17,7 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import com.rays.exception.DatabaseException;
 import com.rays.exception.DuplicateRecordException;
 
 /**
@@ -46,33 +47,36 @@ public abstract class BaseDAOImpl<T extends BaseDTO> implements BaseDAOInt<T> {
 	public T findByUniqueKey(String attribute, Object val, UserContext userContext) {
 		System.out.println("findByUniqueKey in BaseDaoImp ");
 		Class<T> dtoClass = getDTOClass();
+		
+			
+			CriteriaBuilder builder = entityManager.getCriteriaBuilder();
 
-		CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+			CriteriaQuery<T> cq = builder.createQuery(dtoClass);
 
-		CriteriaQuery<T> cq = builder.createQuery(dtoClass);
+			Root<T> qRoot = cq.from(dtoClass);
 
-		Root<T> qRoot = cq.from(dtoClass);
+			Predicate condition = builder.equal(qRoot.get(attribute), val);
 
-		Predicate condition = builder.equal(qRoot.get(attribute), val);
+			if (userContext != null && !isZeroNumber(userContext.getOrgId())) {
+				Predicate conditionGrp = builder.equal(qRoot.get("orgId"), userContext.getOrgId());
+				cq.where(condition, conditionGrp);
+			} else {
+				cq.where(condition);
+			}
 
-		if (userContext != null && !isZeroNumber(userContext.getOrgId())) {
-			Predicate conditionGrp = builder.equal(qRoot.get("orgId"), userContext.getOrgId());
-			cq.where(condition, conditionGrp);
-		} else {
-			cq.where(condition);
-		}
+			TypedQuery<T> query = entityManager.createQuery(cq);
 
-		TypedQuery<T> query = entityManager.createQuery(cq);
+			List<T> list = query.getResultList();
 
-		List<T> list = query.getResultList();
+			T dto = null;
 
-		T dto = null;
+			if (list.size() > 0) {
+				dto = list.get(0);
+			}
 
-		if (list.size() > 0) {
-			dto = list.get(0);
-		}
-
-		return dto;
+			return dto;
+			
+		
 
 	}
 

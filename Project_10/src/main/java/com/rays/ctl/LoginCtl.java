@@ -88,7 +88,6 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 			return res;
 		}
 
-		try {
 
 			UserDTO dto = baseService.authenticate(form.getLoginId(), form.getPassword());
 			if (dto == null) {
@@ -122,15 +121,6 @@ public class LoginCtl extends BaseCtl<UserForm, UserDTO, UserServiceInt> {
 
 			return res;
 
-		} catch (Exception e) {
-//			throw new DatabaseException("Database not connected. .");
-			
-			res.setSuccess(false);
-			res.addMessage("Database Not Connected....");
-			return res;
-			
-			
-		}
 
 	}
 

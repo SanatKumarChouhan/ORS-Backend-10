@@ -89,12 +89,12 @@ public class JasperCtl extends BaseCtl<MarksheetForm, MarksheetDTO, MarksheetSer
 		// context.getRealPath("C:\\Users\\dell\\JaspersoftWorkspace\\MyReports\\ORS10.jrxml");
 		
 		String path = context.getRealPath(rb.getString("jasper"));
+		
+		InputStream jasperStream =
+			    getClass().getResourceAsStream("/report/B.jrxml");
 
-        InputStream jasperStream =
-                getClass().getResourceAsStream("/report/B.jrxml");
-
-        Connection con = null;
-        JasperReport jasperReport = JasperCompileManager.compileReport(jasperStream);
+		Connection con = null;
+		JasperReport jasperReport = JasperCompileManager.compileReport(jasperStream);
 		
 		Map<String, Object> map = new HashMap<String, Object>();
 		
